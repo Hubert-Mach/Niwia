@@ -10,6 +10,6 @@ import time
 # Template 1
 # Your code goes here.
 p = Player()
-for i in range(1,5):
+for i in range(0,5):
     p.move_down()
     time.sleep(1)

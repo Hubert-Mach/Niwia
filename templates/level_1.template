@@ -4,6 +4,15 @@ import time
 # Template 1
 # Your code goes here.
 p = Player()
-for i in range(0,5):
-    p.move_down()
-    time.sleep(1)
+p.move_up()
+time.sleep(1)
+p.move_right()
+time.sleep(1)
+p.move_right()
+time.sleep(1)
+p.move_up()
+time.sleep(1)
+p.move_up()
+time.sleep(1)
+p.move_up()
+time.sleep(1)
