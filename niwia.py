@@ -68,15 +68,19 @@ class Player:
     def __init__(self):
         self.s = Writer()
 
-    def move_up(self):
-        self.s.send("UP")
+    def move_up(self, steps=1):
+        for i in range(steps):
+            self.s.send("UP")
 
-    def move_down(self):
-        self.s.send("DOWN")
+    def move_down(self,steps=1):
+        for i in range(steps):
+            self.s.send("DOWN")
 
-    def move_right(self):
-        self.s.send("RIGHT")
+    def move_right(self, steps=1):
+        for i in range(steps):
+            self.s.send("RIGHT")
 
-    def move_left(self):
-        self.s.send("LEFT")
+    def move_left(self, steps=1):
+        for i in range(steps):
+            self.s.send("LEFT")
 

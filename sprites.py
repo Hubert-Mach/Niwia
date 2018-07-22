@@ -1,5 +1,6 @@
 import pygame
 import time
+from os import path
 from settings import *
 
 
@@ -84,9 +85,8 @@ class Player(pygame.sprite.Sprite):
 
 
     def move(self, dx=0, dy=0):
-        if not self.collide_with_walls(dx, dy):
-            self.x += dx
-            self.y += dy
+        self.x += dx
+        self.y += dy
 
     def collide_with_walls(self, dx=0, dy=0):
         for wall in self.game.walls:
@@ -101,6 +101,12 @@ class Player(pygame.sprite.Sprite):
         self.x += self.vx * self.game.dt
         self.y += self.vy * self.game.dt
         self.rect.topleft = (self.x, self.y)
+        if pygame.sprite.spritecollideany(self,self.game.walls):
+            self.x -= self.vx * self.game.dt
+            self.y -= self.vy * self.game.dt
+            self.rect.topleft = (self.x, self.y)
+            self.stop_motion()
+
         #print ("Set position to "+str(self.x) +" , "+str(self.y))
 
 

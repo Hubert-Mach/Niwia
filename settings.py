@@ -9,8 +9,6 @@ YELLOW = (255, 255, 0)
 
 # some screen settings
 WIDTH_FACTOR = 0.6
-WIDTH = 1024
-HEIGHT = 768
 
 # Server address
 SERVER_ADDRESS = '127.0.0.1'

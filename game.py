@@ -6,7 +6,7 @@ import logging
 from tkinter import *
 from sprites import *
 from settings import *
-
+from tilemap import *
 
 class Game(object):
     def __init__(self, root):
@@ -17,8 +17,8 @@ class Game(object):
         self.directory = TMPDIR
         self.width = self.root.winfo_screenwidth()
         self.height = self.root.winfo_screenheight()
-        w = int(self.width * WIDTH_FACTOR)
-        h = self.height
+        self.dw = int(self.width * WIDTH_FACTOR)
+        self.dh = self.height
         self.clock = pygame.time.Clock()
         self.dt = self.clock.tick(FPS) / 1000
 
@@ -57,7 +57,7 @@ class Game(object):
         self.root.attributes("-fullscreen", True)
 
         pygame.display.init()
-        self.screen = pygame.display.set_mode((w, h))
+        self.screen = pygame.display.set_mode((self.dw, self.dh))
         self.position = 0
         self.step = 1
 
@@ -69,7 +69,28 @@ class Game(object):
         for x in range(3, 6):
             Wall(self, x, 3)
 
+        self.load_data("level1")
+        self.new()
         self.game_loop()
+
+    def load_data(self, level):
+        game_folder = path.dirname(__file__)
+        self.map = Map(game_folder, level)
+
+    def new(self):
+        # initialize all variables and do all the setup for a new game
+        self.all_sprites = pg.sprite.Group()
+        self.walls = pg.sprite.Group()
+        for row, tiles in enumerate(self.map.data):
+            for col, tile in enumerate(tiles):
+                if tile == '1':
+                    Wall(self, col, row)
+                if tile == 'P':
+                    print("Put player on: "+str(col)+" ,"+str(row))
+                    self.player = Player(self, col, row)
+        self.camera = Camera(self.map.width, self.map.height)
+        self.all_sprites.update()
+        self.camera.update(self.player,self.dw,self.dh)
 
     def game_loop(self):
         self.events()
@@ -79,7 +100,9 @@ class Game(object):
     def draw(self):
         self.screen.fill(BGCOLOR)
         self.draw_grid()
-        self.all_sprites.draw(self.screen)
+        for sprite in self.all_sprites:
+            self.screen.blit(sprite.image, self.camera.apply(sprite))
+
         pygame.display.flip()
 
         self.pygame.after(5, self.game_loop)
@@ -99,6 +122,9 @@ class Game(object):
                 os.kill(self.pid.pid, signal.SIGTERM)  # or signal.SIGKILL
             except OSError:
                 return False
+
+            # Reinit level
+            self.new()
         else:
             print("################## Start play ################################")
             self.playing = TRUE
@@ -160,6 +186,7 @@ class Game(object):
         if self.playing:
         # update portion of the game loop
             self.all_sprites.update()
+            self.camera.update(self.player,self.dw,self.dh)
 
     def draw_grid(self):
         info_object = pygame.display.Info()
