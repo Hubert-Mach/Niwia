@@ -55,28 +55,18 @@ class Writer:
         self.directory = TMPDIR
 
     def send(self, msg):
-        file = open(os.path.join(self.directory, str(self.seq)), "w")
+        f = os.path.join(self.directory, str(self.seq))
+        file = open(f, "w")
         file.write(msg)
         file.close()
+#        print("####  Wrote "+msg+" to "+f) 
         self.seq = self.seq + 1
-
-    def close(self):
-        for the_file in os.listdir(self.directory):
-            file_path = os.path.join(self.directory, the_file)
-            try:
-                if os.path.isfile(file_path):
-                    os.unlink(file_path)
-            except Exception as e:
-                logging.error(e)
 
 
 class Player:
 
     def __init__(self):
         self.s = Writer()
-
-    def __del__(self):
-        self.s.close()
 
     def move_up(self):
         self.s.send("UP")

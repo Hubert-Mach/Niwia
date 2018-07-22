@@ -15,41 +15,73 @@ class Player(pygame.sprite.Sprite):
         self.x = x * TILESIZE
         self.y = y * TILESIZE
         self.counter = 0
-        self.position = 0
+        self.step = 0
         self.move = dict()
+        self.action = False
 
     def set_move(self, direction):
-        motion = [TILESIZE, direction]
+        if direction == "UP":
+            motion = [self.y - TILESIZE, direction]
+        elif direction == 'DOWN':
+            motion = [self.y + TILESIZE, direction]
+        elif direction == 'LEFT':
+            motion = [self.x - TILESIZE, direction]
+        elif direction == 'RIGHT':
+            motion = [self.x + TILESIZE, direction]
+
         self.move[self.counter] = motion
         self.counter += 1
 
     def get_move(self):
-        #print("get_move")
-        #print(self.counter)
-        if len(self.move) > self.position:
-            print(self.move)
-            print("Counter is "+str(self.position))
-            movement = self.move.get(self.position)
-            print("Movement")
-            print(movement)
-            if movement[0] > 0:
+        if len(self.move) > self.step:
+            direction = self.move.get(self.step)[1]
+            destination = self.move.get(self.step)[0]
 
-                # check direction and set vx ,vy values
-                if self.move.get(self.position)[1] == 'LEFT':
+            # check direction and set vx ,vy values
+            #if self.move.get(self.step) is not None:
+    
+
+            if direction == 'LEFT' :
+                if self.x > destination:
+                    self.action = True
                     self.vx = -PLAYER_SPEED
-                if self.move.get(self.position)[1] == 'RIGHT':
+                else:
+                    # stop, correct position, increment step
+                    self.x = destination 
+                    self.stop_motion()
+            
+            elif direction == 'RIGHT' :
+                if self.x < destination:
+                    self.action = True
                     self.vx = PLAYER_SPEED
-                if self.move.get(self.position)[1] == 'UP':
-                    self.vy = -PLAYER_SPEED
-                if self.move.get(self.position)[1] == 'DOWN':
-                    self.vy = PLAYER_SPEED
+                else:
+                    # stop, correct position, increment step
+                    self.x = destination
+                    self.stop_motion()
 
-                self.move[self.position][0] = self.move[self.position][0] - 1
-                # if we have reached 0 increase position
-                if self.move.get(self.position)[0] == 0:
-                    self.position += 1
-        else:
-            self.vx, self.vy = 0, 0
+            elif direction == 'UP' :
+                if self.y > destination:
+                    self.action = True
+                    self.vy = -PLAYER_SPEED
+                else:
+                    # stop, correct position, increment step
+                    self.y = destination
+                    self.stop_motion()
+
+            elif direction == 'DOWN' :
+                if self.y < destination:
+                   self.action = True
+                   self.vy = PLAYER_SPEED
+                else:
+                    # stop, correct position, increment step
+                    self.y = self.move.get(self.step)[0]
+                    self.stop_motion()
+
+    def stop_motion(self):
+        self.vx, self.vy = 0, 0
+        self.step += 1
+        self.action = False
+
 
     def move(self, dx=0, dy=0):
         if not self.collide_with_walls(dx, dy):

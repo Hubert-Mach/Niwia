@@ -89,15 +89,18 @@ class Game(object):
 
     def exec(self):
         if self.playing:
+            print("################## Stoping play ##############################")
             self.playing = FALSE
             self.T.config(state=NORMAL)
             self.T.config(bg="GREEN")
             self.bExe["text"] = "EXEC"
+            self.seq = 0
             try:
                 os.kill(self.pid.pid, signal.SIGTERM)  # or signal.SIGKILL
             except OSError:
                 return False
         else:
+            print("################## Start play ################################")
             self.playing = TRUE
             self.T.config(state=DISABLED)
             self.T.config(bg="BLUE")
@@ -110,40 +113,38 @@ class Game(object):
             self.pid = subprocess.Popen([sys.executable, CODEFILE])  # call subprocess
 
     def events(self):
-        #EVENT = pygame.USEREVENT + 1
-        # catch all events here
         if self.playing:
-            # read file contents
-            file = os.path.join(self.directory, str(self.seq))
-            if os.path.isfile(file):
-                f = open(os.path.join(self.directory, str(self.seq)), "r")
-                event = f.read()
-                f.close()
-                #os.remove(os.path.join(self.directory, str(self.seq)))
-                self.seq = self.seq + 1
-
-                if event == 'UP':
-                    print("move up")
-                    self.player.set_move('UP')
-                    self.player.update()
-                elif event == 'DOWN':
-                    print("move down")
-                    self.player.set_move('DOWN')
-                    self.player.update()
-                elif event == 'RIGHT':
-                    print("move right")
-                    self.player.set_move('RIGHT')
-                    self.player.update()
-                elif event == 'LEFT':
-                    print("move left")
-                    self.player.set_move('LEFT')
-                    self.player.update()
-
+            # Read next action only when no action pending
+            if self.player.action == False:
+                # read file contents
+                file = os.path.join(self.directory, str(self.seq))
+                if os.path.isfile(file):
+                    #print("########## Reading file "+ str(file)+ " #############")
+                    f = open(file, "r")
+                    event = f.read()
+                    f.close()
+                    os.remove(os.path.join(self.directory, str(self.seq)))
+                    self.seq += 1
+    
+                    if event == 'UP':
+                        self.player.set_move('UP')
+                        self.player.update()
+                    elif event == 'DOWN':
+                        self.player.set_move('DOWN')
+                        self.player.update()
+                    elif event == 'RIGHT':
+                        self.player.set_move('RIGHT')
+                        self.player.update()
+                    elif event == 'LEFT':
+                        self.player.set_move('LEFT')
+                        self.player.update()
+    
             pygame.event.clear()
 
     def quit(self):
         # remove script file
-        os.remove(CODEFILE)
+        if os.path.isfile(CODEFILE):
+            os.remove(CODEFILE)
 
         # remove temporary files
         for the_file in os.listdir(self.directory):
@@ -156,8 +157,9 @@ class Game(object):
         sys.exit(0)
 
     def update(self):
+        if self.playing:
         # update portion of the game loop
-        self.all_sprites.update()
+            self.all_sprites.update()
 
     def draw_grid(self):
         info_object = pygame.display.Info()
