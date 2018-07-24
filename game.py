@@ -8,19 +8,24 @@ from sprites import *
 from settings import *
 from tilemap import *
 
+
 class Game(object):
     def __init__(self, root):
-        self.playing = FALSE
+        self.playing = False
         self.root = root
         self.pid = ''
         self.seq = 0
         self.directory = TMPDIR
+        self.flag = os.path.join(self.directory, FLAGFILE)
         self.width = self.root.winfo_screenwidth()
         self.height = self.root.winfo_screenheight()
         self.dw = int(self.width * WIDTH_FACTOR)
         self.dh = self.height
         self.clock = pygame.time.Clock()
         self.dt = self.clock.tick(FPS) / 1000
+
+        # Cleaning flag. We are clean on start
+        self.clean = True
 
         # Tk init
         self.pygame = tkinter.Frame(self.root, width=int(self.width * WIDTH_FACTOR), height=self.height)
@@ -79,6 +84,7 @@ class Game(object):
 
     def new(self):
         # initialize all variables and do all the setup for a new game
+        self.seq = 0
         self.all_sprites = pg.sprite.Group()
         self.walls = pg.sprite.Group()
         for row, tiles in enumerate(self.map.data):
@@ -90,7 +96,7 @@ class Game(object):
                     self.player = Player(self, col, row)
         self.camera = Camera(self.map.width, self.map.height)
         self.all_sprites.update()
-        self.camera.update(self.player,self.dw,self.dh)
+        self.camera.update(self.player, self.dw, self.dh)
 
     def game_loop(self):
         self.events()
@@ -107,68 +113,73 @@ class Game(object):
 
         self.pygame.after(5, self.game_loop)
 
-    def incr_step(self, inc):
-        self.step += inc
-
     def exec(self):
         if self.playing:
-            print("################## Stoping play ##############################")
-            self.playing = FALSE
+            print("################## Stop play ##############################")
+            self.playing = False
             self.T.config(state=NORMAL)
             self.T.config(bg="GREEN")
             self.bExe["text"] = "EXEC"
-            self.seq = 0
             try:
-                os.kill(self.pid.pid, signal.SIGTERM)  # or signal.SIGKILL
+                os.kill(self.pid.pid, signal.CTRL_BREAK_EVENT)  # or signal.SIGKILL
             except OSError:
+                print("Failed to kill script")
                 return False
 
             # Reinit level
             self.new()
+            self.cleanup()
         else:
-            print("################## Start play ################################")
-            self.playing = TRUE
-            self.T.config(state=DISABLED)
-            self.T.config(bg="BLUE")
-            self.bExe["text"] = "STOP"
+            if self.clean:
+                print("################## Start play ################################")
+                self.playing = True
+                self.T.config(state=DISABLED)
+                self.T.config(bg="BLUE")
+                self.bExe["text"] = "STOP"
 
-            # Put contents of text box to file
-            script = open(CODEFILE, "w")
-            script.write(self.T.get("1.0", 'end-1c'))
-            script.close()
-            self.pid = subprocess.Popen([sys.executable, CODEFILE])  # call subprocess
+                # Put contents of text box to file
+                script = open(CODEFILE, "w")
+                script.write(self.T.get("1.0", 'end-1c'))
+                script.close()
+                self.pid = subprocess.Popen([sys.executable, CODEFILE])  # call subprocess
 
     def events(self):
         if self.playing:
             # Read next action only when no action pending
-            if self.player.action == False:
+            if not self.player.action:
                 # read file contents
                 file = os.path.join(self.directory, str(self.seq))
-                if os.path.isfile(file):
-                    #print("########## Reading file "+ str(file)+ " #############")
-                    f = open(file, "r")
-                    event = f.read()
-                    f.close()
-                    os.remove(os.path.join(self.directory, str(self.seq)))
-                    self.seq += 1
-    
-                    if event == 'UP':
-                        self.player.set_move('UP')
-                        self.player.update()
-                    elif event == 'DOWN':
-                        self.player.set_move('DOWN')
-                        self.player.update()
-                    elif event == 'RIGHT':
-                        self.player.set_move('RIGHT')
-                        self.player.update()
-                    elif event == 'LEFT':
-                        self.player.set_move('LEFT')
-                        self.player.update()
-    
+                if os.path.isfile(self.flag):
+                    if os.path.isfile(file):
+                        print("Reading file: "+str(file))
+                        with open(file, "r") as f:
+                            event = f.read()
+                            print("Read "+event+" from "+str(f.name))
+                            self.seq += 1
+
+                        if event == 'UP':
+                            self.player.set_move('UP')
+                            self.player.update()
+                        elif event == 'DOWN':
+                            self.player.set_move('DOWN')
+                            self.player.update()
+                        elif event == 'RIGHT':
+                            self.player.set_move('RIGHT')
+                            self.player.update()
+                        elif event == 'LEFT':
+                            self.player.set_move('LEFT')
+                            self.player.update()
+
             pygame.event.clear()
 
     def quit(self):
+        self.cleanup()
+        sys.exit(0)
+
+    def cleanup(self):
+        self.clean = False
         # remove script file
+        print("Cleaning up temp files")
         if os.path.isfile(CODEFILE):
             os.remove(CODEFILE)
 
@@ -180,19 +191,19 @@ class Game(object):
                     os.unlink(file_path)
             except Exception as e:
                 logging.error(e)
-        sys.exit(0)
+        self.clean = True
 
     def update(self):
         if self.playing:
-        # update portion of the game loop
+            # update portion of the game loop
             self.all_sprites.update()
-            self.camera.update(self.player,self.dw,self.dh)
+            self.camera.update(self.player, self.dw, self.dh)
 
     def draw_grid(self):
         info_object = pygame.display.Info()
-        WIDTH = info_object.current_w
-        HEIGHT = info_object.current_h
-        for x in range(0, WIDTH, TILESIZE):
-            pygame.draw.line(self.screen, LIGHTGREY, (x, 0), (x, HEIGHT))
-        for y in range(0, HEIGHT, TILESIZE):
-            pygame.draw.line(self.screen, LIGHTGREY, (0, y), (WIDTH, y))
+        width = info_object.current_w
+        height:width = info_object.current_h
+        for x in range(0, width, TILESIZE):
+            pygame.draw.line(self.screen, LIGHTGREY, (x, 0), (x, height))
+        for y in range(0, height, TILESIZE):
+            pygame.draw.line(self.screen, LIGHTGREY, (0, y), (width, y))

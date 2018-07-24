@@ -1,6 +1,4 @@
 import pygame
-import time
-from os import path
 from settings import *
 
 
@@ -21,6 +19,7 @@ class Player(pygame.sprite.Sprite):
         self.action = False
 
     def set_move(self, direction):
+        print("Set direction to "+direction+" to sequence number "+str(self.step))
         if direction == "UP":
             motion = [self.y - TILESIZE, direction]
         elif direction == 'DOWN':
@@ -39,10 +38,7 @@ class Player(pygame.sprite.Sprite):
             destination = self.move.get(self.step)[0]
 
             # check direction and set vx ,vy values
-            #if self.move.get(self.step) is not None:
-    
-
-            if direction == 'LEFT' :
+            if direction == 'LEFT':
                 if self.x > destination:
                     self.action = True
                     self.vx = -PLAYER_SPEED
@@ -51,7 +47,7 @@ class Player(pygame.sprite.Sprite):
                     self.x = destination 
                     self.stop_motion()
             
-            elif direction == 'RIGHT' :
+            elif direction == 'RIGHT':
                 if self.x < destination:
                     self.action = True
                     self.vx = PLAYER_SPEED
@@ -60,7 +56,7 @@ class Player(pygame.sprite.Sprite):
                     self.x = destination
                     self.stop_motion()
 
-            elif direction == 'UP' :
+            elif direction == 'UP':
                 if self.y > destination:
                     self.action = True
                     self.vy = -PLAYER_SPEED
@@ -69,10 +65,10 @@ class Player(pygame.sprite.Sprite):
                     self.y = destination
                     self.stop_motion()
 
-            elif direction == 'DOWN' :
+            elif direction == 'DOWN':
                 if self.y < destination:
-                   self.action = True
-                   self.vy = PLAYER_SPEED
+                    self.action = True
+                    self.vy = PLAYER_SPEED
                 else:
                     # stop, correct position, increment step
                     self.y = self.move.get(self.step)[0]
@@ -83,31 +79,21 @@ class Player(pygame.sprite.Sprite):
         self.step += 1
         self.action = False
 
-
     def move(self, dx=0, dy=0):
         self.x += dx
         self.y += dy
-
-    def collide_with_walls(self, dx=0, dy=0):
-        for wall in self.game.walls:
-            print("W: "+str(wall.x)+","+str(wall.y))
-            if wall.x == self.x + dx and wall.y == self.y + dy:
-                print("COLLISION AT: "+str(self.x+dx)+","+str(self.y+dy)+" with wall at "+str(wall.x)+","+str(wall.y))
-                return True
-        return False
 
     def update(self):
         self.get_move()
         self.x += self.vx * self.game.dt
         self.y += self.vy * self.game.dt
         self.rect.topleft = (self.x, self.y)
-        if pygame.sprite.spritecollideany(self,self.game.walls):
+        if pygame.sprite.spritecollideany(self, self.game.walls):
+            print("Collision")
             self.x -= self.vx * self.game.dt
             self.y -= self.vy * self.game.dt
             self.rect.topleft = (self.x, self.y)
             self.stop_motion()
-
-        #print ("Set position to "+str(self.x) +" , "+str(self.y))
 
 
 class Wall(pygame.sprite.Sprite):

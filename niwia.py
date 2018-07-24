@@ -53,13 +53,20 @@ class Writer:
     def __init__(self):
         self.seq = 0
         self.directory = TMPDIR
+        self.flagfile = os.path.join(self.directory, FLAGFILE)
 
     def send(self, msg):
+        if self.seq >= MAXSEQ:
+            # Do not send message.
+            # TODO : Notify user about that
+            return
+
         f = os.path.join(self.directory, str(self.seq))
-        file = open(f, "w")
-        file.write(msg)
-        file.close()
-#        print("####  Wrote "+msg+" to "+f) 
+        with open(f, "w") as file:
+            file.write(msg)
+        # Create flagfile after first file created
+        if self.seq == 0:
+            open(self.flagfile, 'a').close()
         self.seq = self.seq + 1
 
 

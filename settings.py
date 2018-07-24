@@ -25,6 +25,8 @@ CODEDIR="save" # directory where created script is saved
 CODEFILE="scipt.py" # file where code from textwidget is written
 COMDIR="run" # directory where runtime file are created
 TMPDIR="tmp" # file where communication files are written to
+MAXSEQ = 6000  # Maximum number of messages to be sent to game
+FLAGFILE = "F"
 
 # game settings
 FPS = 60
