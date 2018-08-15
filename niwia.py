@@ -51,7 +51,7 @@ class Player:
         for i in range(steps):
             self.s.send("UP")
 
-    def move_down(self,steps=1):
+    def move_down(self, steps=1):
         for i in range(steps):
             self.s.send("DOWN")
 
