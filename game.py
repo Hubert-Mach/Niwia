@@ -121,7 +121,10 @@ class Game(object):
             self.T.config(bg="GREEN")
             self.bExe["text"] = "EXEC"
             try:
-                os.kill(self.pid.pid, signal.CTRL_BREAK_EVENT)  # or signal.SIGKILL
+                if sys.platform == "win32":
+                    os.kill(self.pid.pid, signal.CTRL_BREAK_EVENT)
+                else:
+                    os.kill(self.pid.pid, signal.SIGKILL) 
             except OSError:
                 print("Failed to kill script")
                 return False
@@ -202,7 +205,7 @@ class Game(object):
     def draw_grid(self):
         info_object = pygame.display.Info()
         width = info_object.current_w
-        height:width = info_object.current_h
+        height = info_object.current_h
         for x in range(0, width, TILESIZE):
             pygame.draw.line(self.screen, LIGHTGREY, (x, 0), (x, height))
         for y in range(0, height, TILESIZE):
