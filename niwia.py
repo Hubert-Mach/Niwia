@@ -1,6 +1,7 @@
 from settings import *
 import logging
 import os
+import time
 logging.basicConfig(format='%(asctime)s %(message)s', level=logging.INFO)
 
 
@@ -23,6 +24,12 @@ class Writer:
                 # Do not send message.
                 # TODO : Notify user about that
                 return
+
+            if self.seq > 0:
+                r = os.path.join(self.directory, str(self.seq-1)+"r")
+
+                while not os.path.exists(r):
+                    time.sleep(0.01)
 
             f = os.path.join(self.directory, str(self.seq))
             with open(f, "w") as file:

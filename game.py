@@ -162,7 +162,7 @@ class Game(object):
                         with open(file, "r") as f:
                             event = f.read()
                             print("Read "+event+" from "+str(f.name))
-                            self.seq += 1
+
 
                         if event == 'UP':
                             self.player.set_move('UP')
@@ -181,6 +181,7 @@ class Game(object):
                             self.player.update()
                             self.makeEmptyResponse(self.seq)
 
+                        self.seq += 1
             pygame.event.clear()
 
     def quit(self):
