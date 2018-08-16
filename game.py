@@ -32,11 +32,12 @@ class Game(object):
         self.pygame.pack(side=LEFT)
         root.update()
 
+
         # GUI Elements
         button = tkinter.Button(self.root, text="QUIT", fg="red", command=self.quit)
         button.place(x=int(self.width * WIDTH_FACTOR) + MARGIN, y=MARGIN, width=80, height=BUTTON_HEIGHT)
 
-        self.bExe = tkinter.Button(self.root, text="EXEC", fg="red", command=self.exec)
+        self.bExe = tkinter.Button(self.root, text="EXEC", fg="red", command=self.exec, cursor="hand2")
         self.bExe.place(x=int(self.width * WIDTH_FACTOR) + MARGIN + 80, y=MARGIN, width=80, height=BUTTON_HEIGHT)
 
         # Text widget
@@ -54,6 +55,20 @@ class Game(object):
         # Get template code
         template = open(os.path.join("templates", "level_1.template"), "r")
         self.T.insert(CURRENT, template.read())
+
+        # Embed svg image: https://stackoverflow.com/questions/22583035/can-you-display-an-image-inside-of-a-python-program-without-using-pygame
+        self.canvas = Canvas(root, width=self.width, height=self.height,)
+        self.canvas.place(x=0, y=0)
+
+        #canvas_id = self.canvas.create_rectangle(50,50,350,350,fill='red')
+        self.hideMenu = tkinter.Button(self.root, text="HIDE", fg="red", command=self.hide)
+        self.placeHideButton()
+
+        self.showMenu = tkinter.Button(self.root, text="SHOW", fg="red", command=self.show)
+        #self.showMenu.place(x=int(self.width / 2 - 100) + MARGIN, y=MARGIN, width=80, height=BUTTON_HEIGHT)
+
+        #canvas.delete(canvas_id)
+        #canvas.pack_forget()
 
         # pygame init
         os.environ['SDL_WINDOWID'] = str(self.pygame.winfo_id())
@@ -113,38 +128,44 @@ class Game(object):
 
         self.pygame.after(5, self.game_loop)
 
+    def startPlay(self):
+        self.cleanup()
+        print("################## Start play ################################")
+        self.playing = True
+        self.T.config(state=DISABLED)
+        self.T.config(bg="BLUE")
+        self.bExe["text"] = "STOP"
+
+        # Put contents of text box to file
+        script = open(CODEFILE, "w")
+        script.write(self.T.get("1.0", 'end-1c'))
+        script.close()
+        self.pid = subprocess.Popen([sys.executable, CODEFILE])  # call subprocess
+
+    def stopPlay(self):
+        print("################## Stop play ##############################")
+        self.playing = False
+        self.T.config(state=NORMAL)
+        self.T.config(bg="GREEN")
+        self.bExe["text"] = "EXEC"
+        try:
+            if sys.platform == "win32":
+                os.kill(self.pid.pid, signal.CTRL_BREAK_EVENT)
+            else:
+                os.kill(self.pid.pid, signal.SIGKILL)
+        except OSError:
+            print("Failed to kill script")
+            return False
+
+        # Reinit level
+        self.new()
+        self.cleanup()
+
     def exec(self):
         if self.playing:
-            print("################## Stop play ##############################")
-            self.playing = False
-            self.T.config(state=NORMAL)
-            self.T.config(bg="GREEN")
-            self.bExe["text"] = "EXEC"
-            try:
-                if sys.platform == "win32":
-                    os.kill(self.pid.pid, signal.CTRL_BREAK_EVENT)
-                else:
-                    os.kill(self.pid.pid, signal.SIGKILL) 
-            except OSError:
-                print("Failed to kill script")
-                return False
-
-            # Reinit level
-            self.new()
-            self.cleanup()
+            self.stopPlay()
         else:
-            if self.clean:
-                print("################## Start play ################################")
-                self.playing = True
-                self.T.config(state=DISABLED)
-                self.T.config(bg="BLUE")
-                self.bExe["text"] = "STOP"
-
-                # Put contents of text box to file
-                script = open(CODEFILE, "w")
-                script.write(self.T.get("1.0", 'end-1c'))
-                script.close()
-                self.pid = subprocess.Popen([sys.executable, CODEFILE])  # call subprocess
+            self.startPlay()
 
     def makeEmptyResponse(self, seq):
         r = os.path.join(self.directory, str(seq)+"r")
@@ -183,6 +204,22 @@ class Game(object):
                         os.remove(file)
                         self.seq += 1
             pygame.event.clear()
+
+    def hide(self):
+        self.canvas.destroy()
+        self.hideMenu.destroy()
+        self.showMenu = tkinter.Button(self.root, text="SHOW", fg="red", command=self.show)
+        self.showMenu.place(x=int(self.width) - MARGIN - 80, y=MARGIN, width=80, height=BUTTON_HEIGHT)
+
+    def show(self):
+        self.canvas = Canvas(self.root, width=self.width, height=self.height,)
+        self.canvas.place(x=0, y=0)
+        self.showMenu.destroy()
+        self.hideMenu = tkinter.Button(self.root, text="HIDE", fg="red", command=self.hide)
+        self.placeHideButton()
+
+    def placeHideButton(self):
+        self.hideMenu.place(x=int(self.width) - MARGIN - 80, y=MARGIN, width=80, height=BUTTON_HEIGHT)
 
     def quit(self):
         self.cleanup()
