@@ -31,12 +31,13 @@ class Writer:
             # Create flagfile after first file created
             if self.seq == 0:
                 open(self.flagfile, 'a').close()
-            self.seq = self.seq + 1
 
             # Wait for response file
-            r = os.path.join(self.directory, str(self.seq-1)+"r")
+            r = os.path.join(self.directory, str(self.seq)+"r")
             while not os.path.exists(r):
                 time.sleep(0.01)
+
+            self.seq = self.seq + 1
 
     instance = None
 
