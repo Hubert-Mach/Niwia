@@ -146,6 +146,10 @@ class Game(object):
                 script.close()
                 self.pid = subprocess.Popen([sys.executable, CODEFILE])  # call subprocess
 
+    def makeEmptyResponse(self, seq):
+        r = os.path.join(self.directory, str(seq)+"r")
+        open(r, 'a').close()
+
     def events(self):
         if self.playing:
             # Read next action only when no action pending
@@ -163,15 +167,19 @@ class Game(object):
                         if event == 'UP':
                             self.player.set_move('UP')
                             self.player.update()
+                            self.makeEmptyResponse(self.seq)
                         elif event == 'DOWN':
                             self.player.set_move('DOWN')
                             self.player.update()
+                            self.makeEmptyResponse(self.seq)
                         elif event == 'RIGHT':
                             self.player.set_move('RIGHT')
                             self.player.update()
+                            self.makeEmptyResponse(self.seq)
                         elif event == 'LEFT':
                             self.player.set_move('LEFT')
                             self.player.update()
+                            self.makeEmptyResponse(self.seq)
 
             pygame.event.clear()
 
