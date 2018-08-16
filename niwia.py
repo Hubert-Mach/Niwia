@@ -25,12 +25,6 @@ class Writer:
                 # TODO : Notify user about that
                 return
 
-            if self.seq > 0:
-                r = os.path.join(self.directory, str(self.seq-1)+"r")
-
-                while not os.path.exists(r):
-                    time.sleep(0.01)
-
             f = os.path.join(self.directory, str(self.seq))
             with open(f, "w") as file:
                 file.write(msg)
@@ -38,6 +32,11 @@ class Writer:
             if self.seq == 0:
                 open(self.flagfile, 'a').close()
             self.seq = self.seq + 1
+
+            # Wait for response file
+            r = os.path.join(self.directory, str(self.seq-1)+"r")
+            while not os.path.exists(r):
+                time.sleep(0.01)
 
     instance = None
 
