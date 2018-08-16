@@ -37,6 +37,7 @@ class Writer:
             while not os.path.exists(r):
                 time.sleep(0.01)
 
+            os.remove(r)
             self.seq = self.seq + 1
 
     instance = None

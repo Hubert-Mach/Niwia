@@ -180,7 +180,7 @@ class Game(object):
                             self.player.set_move('LEFT')
                             self.player.update()
                             self.makeEmptyResponse(self.seq)
-
+                        os.remove(file)
                         self.seq += 1
             pygame.event.clear()
 
