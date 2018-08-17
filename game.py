@@ -36,7 +36,6 @@ class Game(object):
         # GUI Elements
 
         # In game buttons
-        self.quitButton = tkinter.Button(self.root, text="QUIT", fg="red", command=self.quit)
         self.execButton = tkinter.Button(self.root, text="EXEC", fg="red", command=self.exec, cursor="hand2")
         self.showMenu = tkinter.Button(self.root, text="MAP", fg="red", command=self.showMap)
 
@@ -59,6 +58,7 @@ class Game(object):
         # Map buttons
         self.level1Button = tkinter.Button(self.root, text="1", fg="red", command=lambda: self.load_data("1"))
         self.level2Button = tkinter.Button(self.root, text="2", fg="red", command=lambda: self.load_data("2"))
+        self.quitButton = tkinter.Button(self.root, text="QUIT", fg="red", command=self.quit)
         
         self.placeMapButtons()
 
@@ -87,7 +87,7 @@ class Game(object):
         self.game_loop()
 
     def placeButtons(self):
-        self.quitButton.place(x=int(self.width * WIDTH_FACTOR) + MARGIN, y=MARGIN, width=80, height=BUTTON_HEIGHT)
+        self.quitButton.place(x=int(self.width) - MARGIN - 80, y=MARGIN, width=80, height=BUTTON_HEIGHT)
         self.execButton.place(x=int(self.width * WIDTH_FACTOR) + MARGIN + 80, y=MARGIN, width=80, height=BUTTON_HEIGHT)
 
     def load_data(self, level):
@@ -219,7 +219,7 @@ class Game(object):
         self.level1Button.destroy()
         self.level2Button.destroy()
         self.showMenu = tkinter.Button(self.root, text="MAP", fg="red", command=self.showMap)
-        self.showMenu.place(x=int(self.width) - MARGIN - 80, y=MARGIN, width=80, height=BUTTON_HEIGHT)
+        self.showMenu.place(x=int(self.width * WIDTH_FACTOR) + MARGIN, y=MARGIN, width=80, height=BUTTON_HEIGHT)
 
     def showMap(self):
         self.canvas = Canvas(self.root, width=self.width, height=self.height,)
@@ -235,6 +235,8 @@ class Game(object):
         self.level2Button.place(x=20, y=MARGIN + 80 , width=80, height=BUTTON_HEIGHT)
 
     def quit(self):
+        if self.playing:
+            self.stopPlay()
         self.cleanup()
         sys.exit(0)
 
