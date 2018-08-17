@@ -1,4 +1,4 @@
-#!/data/Github.com/niwia/.niwia/bin/python
+#!/data/Github.com/Niwia/.niwia3/bin/python
 
 import sys
 import getopt
