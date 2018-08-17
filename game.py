@@ -228,11 +228,13 @@ class Game(object):
         # Map buttons
         self.level1Button = tkinter.Button(self.root, text="1", fg="red", command=lambda: self.load_data("1"))
         self.level2Button = tkinter.Button(self.root, text="2", fg="red", command=lambda: self.load_data("2"))
+        self.quitButton = tkinter.Button(self.root, text="QUIT", fg="red", command=self.quit)
         self.placeMapButtons()
 
     def placeMapButtons(self):
         self.level1Button.place(x=20, y=MARGIN , width=80, height=BUTTON_HEIGHT)
         self.level2Button.place(x=20, y=MARGIN + 80 , width=80, height=BUTTON_HEIGHT)
+        self.quitButton.place(x=int(self.width) - MARGIN - 80, y=MARGIN, width=80, height=BUTTON_HEIGHT)
 
     def quit(self):
         if self.playing:
