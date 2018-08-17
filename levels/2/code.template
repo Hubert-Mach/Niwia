@@ -1,0 +1,8 @@
+from niwia import *
+import time
+
+# Level 2 template
+# Your code goes here.
+p = Player()
+p.move_right()
+p.move_up(8)
