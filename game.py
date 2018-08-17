@@ -34,17 +34,16 @@ class Game(object):
 
 
         # GUI Elements
-        button = tkinter.Button(self.root, text="QUIT", fg="red", command=self.quit)
-        button.place(x=int(self.width * WIDTH_FACTOR) + MARGIN, y=MARGIN, width=80, height=BUTTON_HEIGHT)
 
-        self.bExe = tkinter.Button(self.root, text="EXEC", fg="red", command=self.exec, cursor="hand2")
-        self.bExe.place(x=int(self.width * WIDTH_FACTOR) + MARGIN + 80, y=MARGIN, width=80, height=BUTTON_HEIGHT)
+        # In game buttons
+        self.quitButton = tkinter.Button(self.root, text="QUIT", fg="red", command=self.quit)
+        self.execButton = tkinter.Button(self.root, text="EXEC", fg="red", command=self.exec, cursor="hand2")
+        self.showMenu = tkinter.Button(self.root, text="MAP", fg="red", command=self.showMap)
 
         # Text widget
         self.S = Scrollbar(self.root)
         self.T = Text(self.root, height=200, width=int(self.width * (1 - WIDTH_FACTOR) + 80), bg="GREEN",
                       font=("Helvetica", 18))
-        self.S.pack(side=RIGHT, fill=Y)
         self.S.place(x=int(self.width - 20), y=(MARGIN * 2) + BUTTON_HEIGHT, width=20,
                      height=int(self.height * TEXT_WIDGET_FACTOR))
         self.T.place(x=int(self.width * WIDTH_FACTOR) + MARGIN, y=(MARGIN * 2) + BUTTON_HEIGHT,
@@ -52,23 +51,23 @@ class Game(object):
         self.S.config(command=self.T.yview)
         self.T.config(yscrollcommand=self.S.set)
 
-        # Get template code
-        template = open(os.path.join("templates", "level_1.template"), "r")
-        self.T.insert(CURRENT, template.read())
 
         # Embed svg image: https://stackoverflow.com/questions/22583035/can-you-display-an-image-inside-of-a-python-program-without-using-pygame
         self.canvas = Canvas(root, width=self.width, height=self.height,)
         self.canvas.place(x=0, y=0)
 
-        #canvas_id = self.canvas.create_rectangle(50,50,350,350,fill='red')
-        self.hideMenu = tkinter.Button(self.root, text="HIDE", fg="red", command=self.hide)
-        self.placeHideButton()
+        # Map buttons
+        self.level1Button = tkinter.Button(self.root, text="1", fg="red", command=lambda: self.load_data("1"))
+        self.level2Button = tkinter.Button(self.root, text="2", fg="red", command=lambda: self.load_data("2"))
+        
+        self.placeMapButtons()
 
-        self.showMenu = tkinter.Button(self.root, text="SHOW", fg="red", command=self.show)
         #self.showMenu.place(x=int(self.width / 2 - 100) + MARGIN, y=MARGIN, width=80, height=BUTTON_HEIGHT)
 
         #canvas.delete(canvas_id)
         #canvas.pack_forget()
+
+        self.placeButtons()
 
         # pygame init
         os.environ['SDL_WINDOWID'] = str(self.pygame.winfo_id())
@@ -81,21 +80,30 @@ class Game(object):
         self.position = 0
         self.step = 1
 
-        # Initialize level
-        self.all_sprites = pygame.sprite.Group()
-        self.walls = pygame.sprite.Group()
-        self.player = Player(self, 5, 5)
-        self.player.update()
-        for x in range(3, 6):
-            Wall(self, x, 3)
-
-        self.load_data("level1")
+        # initialy load level 1
+        game_folder = path.dirname(__file__)
+        self.map = Map(game_folder, "1")
         self.new()
         self.game_loop()
 
+    def placeButtons(self):
+        self.quitButton.place(x=int(self.width * WIDTH_FACTOR) + MARGIN, y=MARGIN, width=80, height=BUTTON_HEIGHT)
+        self.execButton.place(x=int(self.width * WIDTH_FACTOR) + MARGIN + 80, y=MARGIN, width=80, height=BUTTON_HEIGHT)
+
     def load_data(self, level):
+        # Load map
         game_folder = path.dirname(__file__)
         self.map = Map(game_folder, level)
+        # Clean text widget
+        self.T.delete('1.0', END)
+        # Read and put template code to text widget
+        template = open(os.path.join("levels", str(level), "code.template"), "r")
+        self.T.insert(CURRENT, template.read())
+        # Hide overlay
+        self.hide()
+
+        # start new game
+        self.new()
 
     def new(self):
         # initialize all variables and do all the setup for a new game
@@ -134,7 +142,7 @@ class Game(object):
         self.playing = True
         self.T.config(state=DISABLED)
         self.T.config(bg="BLUE")
-        self.bExe["text"] = "STOP"
+        self.execButton["text"] = "STOP"
 
         # Put contents of text box to file
         script = open(CODEFILE, "w")
@@ -147,7 +155,7 @@ class Game(object):
         self.playing = False
         self.T.config(state=NORMAL)
         self.T.config(bg="GREEN")
-        self.bExe["text"] = "EXEC"
+        self.execButton["text"] = "EXEC"
         try:
             if sys.platform == "win32":
                 os.kill(self.pid.pid, signal.CTRL_BREAK_EVENT)
@@ -206,20 +214,25 @@ class Game(object):
             pygame.event.clear()
 
     def hide(self):
+        # Destroy overlay and level buttons
         self.canvas.destroy()
-        self.hideMenu.destroy()
-        self.showMenu = tkinter.Button(self.root, text="SHOW", fg="red", command=self.show)
+        self.level1Button.destroy()
+        self.level2Button.destroy()
+        self.showMenu = tkinter.Button(self.root, text="MAP", fg="red", command=self.showMap)
         self.showMenu.place(x=int(self.width) - MARGIN - 80, y=MARGIN, width=80, height=BUTTON_HEIGHT)
 
-    def show(self):
+    def showMap(self):
         self.canvas = Canvas(self.root, width=self.width, height=self.height,)
         self.canvas.place(x=0, y=0)
         self.showMenu.destroy()
-        self.hideMenu = tkinter.Button(self.root, text="HIDE", fg="red", command=self.hide)
-        self.placeHideButton()
+        # Map buttons
+        self.level1Button = tkinter.Button(self.root, text="1", fg="red", command=lambda: self.load_data("1"))
+        self.level2Button = tkinter.Button(self.root, text="2", fg="red", command=lambda: self.load_data("2"))
+        self.placeMapButtons()
 
-    def placeHideButton(self):
-        self.hideMenu.place(x=int(self.width) - MARGIN - 80, y=MARGIN, width=80, height=BUTTON_HEIGHT)
+    def placeMapButtons(self):
+        self.level1Button.place(x=20, y=MARGIN , width=80, height=BUTTON_HEIGHT)
+        self.level2Button.place(x=20, y=MARGIN + 80 , width=80, height=BUTTON_HEIGHT)
 
     def quit(self):
         self.cleanup()

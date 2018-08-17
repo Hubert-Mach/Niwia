@@ -5,6 +5,7 @@ from settings import *
 class Map:
     def __init__(self, game_folder, level):
         self.data = []
+        print("loading map for "+str(level))
         with open(path.join(game_folder, 'levels', level, 'map.txt'), 'rt') as f:
             for line in f:
                 self.data.append(line.strip())
