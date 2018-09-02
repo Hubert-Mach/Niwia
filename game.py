@@ -82,7 +82,10 @@ class Game(object):
 
         # initialy load level 1
         game_folder = path.dirname(__file__)
-        self.map = Map(game_folder, "1")
+        #self.map = Map(game_folder, "1")
+        self.map = TiledMap(os.path.join(game_folder, "levels", "1", "map.tmx"))
+        self.map_img = self.map.make_map()
+        self.map_rect = self.map_img.get_rect()
         self.new()
         self.game_loop()
 
@@ -93,7 +96,10 @@ class Game(object):
     def load_data(self, level):
         # Load map
         game_folder = path.dirname(__file__)
-        self.map = Map(game_folder, level)
+        map_folder = os.path.join(game_folder, "levels")
+        self.map = TiledMap(os.path.join(map_folder, level, "map.tmx"))
+        self.map_img = self.map.make_map()
+        self.map_rect = self.map_img.get_rect()
         # Clean text widget
         self.T.delete('1.0', END)
         # Read and put template code to text widget
@@ -110,13 +116,14 @@ class Game(object):
         self.seq = 0
         self.all_sprites = pg.sprite.Group()
         self.walls = pg.sprite.Group()
-        for row, tiles in enumerate(self.map.data):
-            for col, tile in enumerate(tiles):
-                if tile == '1':
-                    Wall(self, col, row)
-                if tile == 'P':
-                    print("Put player on: "+str(col)+" ,"+str(row))
-                    self.player = Player(self, col, row)
+        #for row, tiles in enumerate(self.map.data):
+        #    for col, tile in enumerate(tiles):
+        #        if tile == '1':
+        #            Wall(self, col, row)
+        #        if tile == 'P':
+        #            print("Put player on: "+str(col)+" ,"+str(row))
+        #            self.player = Player(self, col, row)
+        self.player = Player(self, 5, 5)
         self.camera = Camera(self.map.width, self.map.height)
         self.all_sprites.update()
         self.camera.update(self.player, self.dw, self.dh)
@@ -127,8 +134,9 @@ class Game(object):
         self.draw()
 
     def draw(self):
-        self.screen.fill(BGCOLOR)
-        self.draw_grid()
+        #self.screen.fill(BGCOLOR)
+        self.screen.blit(self.map_img, self.camera.apply_rect(self.map_rect))
+        #self.draw_grid()
         for sprite in self.all_sprites:
             self.screen.blit(sprite.image, self.camera.apply(sprite))
 
