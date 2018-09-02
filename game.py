@@ -123,7 +123,9 @@ class Game(object):
         #        if tile == 'P':
         #            print("Put player on: "+str(col)+" ,"+str(row))
         #            self.player = Player(self, col, row)
-        self.player = Player(self, 5, 5)
+        for tile_object in self.map.tmxdata.objects:
+            if tile_object.name == "Player":
+                self.player = Player(self, tile_object.x, tile_object.y)
         self.camera = Camera(self.map.width, self.map.height)
         self.all_sprites.update()
         self.camera.update(self.player, self.dw, self.dh)
