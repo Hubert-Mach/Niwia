@@ -27,9 +27,17 @@ class Game(object):
         # Cleaning flag. We are clean on start
         self.clean = True
 
-        # Tk init
-        self.pygame = tkinter.Frame(self.root, width=int(self.width * WIDTH_FACTOR), height=self.height)
-        self.pygame.pack(side=LEFT)
+        # Pygame frame
+        self.pygame_frame = tkinter.Frame(self.root, width=int(self.width * WIDTH_FACTOR), height=self.height)
+        self.pygame_frame.pack(side=LEFT)
+
+        self.menu_canvas = Canvas(root, width=int(self.width*(1-WIDTH_FACTOR)), height=self.height, bg="black")
+        filename = PhotoImage(file=os.path.join('img', "wood_background.gif"))
+        background_label = Label(root, image=filename)
+        background_label.image = filename
+        background_label.place(x=int(self.width * WIDTH_FACTOR), y=0, relwidth=1-WIDTH_FACTOR, relheight=1)
+
+        self.menu_canvas.pack(side=RIGHT)
         root.update()
 
 
@@ -52,7 +60,7 @@ class Game(object):
 
 
         # Embed svg image: https://stackoverflow.com/questions/22583035/can-you-display-an-image-inside-of-a-python-program-without-using-pygame
-        self.canvas = Canvas(root, width=self.width, height=self.height,)
+        self.canvas = Canvas(root, width=self.width, height=self.height, bg="white")
         self.canvas.place(x=0, y=0)
 
         # Map buttons
@@ -70,7 +78,7 @@ class Game(object):
         self.placeButtons()
 
         # pygame init
-        os.environ['SDL_WINDOWID'] = str(self.pygame.winfo_id())
+        os.environ['SDL_WINDOWID'] = str(self.pygame_frame.winfo_id())
         if sys.platform == "win32":
             os.environ['SDL_VIDEODRIVER'] = 'windib'
         self.root.attributes("-fullscreen", True)
@@ -92,6 +100,7 @@ class Game(object):
     def placeButtons(self):
         self.quitButton.place(x=int(self.width) - MARGIN - 80, y=MARGIN, width=80, height=BUTTON_HEIGHT)
         self.execButton.place(x=int(self.width * WIDTH_FACTOR) + MARGIN + 80, y=MARGIN, width=80, height=BUTTON_HEIGHT)
+
 
     def load_data(self, level):
         # Load map
@@ -147,7 +156,7 @@ class Game(object):
 
         pygame.display.flip()
 
-        self.pygame.after(5, self.game_loop)
+        self.pygame_frame.after(5, self.game_loop)
 
     def startPlay(self):
         self.cleanup()
